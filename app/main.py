@@ -1,7 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 
 app = FastAPI(title="Sofa`s eCommerce API")
+
+
+@app.get("/favicon.ico, include_in_schema=False")
+async def favicon():
+    return Response(content="", media_type="image/x-icon")
 
 
 @app.get("/")
