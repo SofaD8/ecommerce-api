@@ -1,7 +1,13 @@
 from fastapi import FastAPI, Response
 
+from app.core.config import settings
+from app.api.api_v1 import api_router
 
-app = FastAPI(title="Sofa`s eCommerce API")
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+)
 
 
 @app.get("/favicon.ico, include_in_schema=False")
@@ -14,6 +20,4 @@ async def read_root():
     return {"message": "hello Sofa!"}
 
 
-@app.get("/items/{item_id}")
-async  def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
+app.include_router(api_router, prefix=settings.API_V1_STR)
