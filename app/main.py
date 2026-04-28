@@ -10,7 +10,7 @@ app = FastAPI(
 )
 
 
-@app.get("/favicon.ico, include_in_schema=False")
+@app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     return Response(content="", media_type="image/x-icon")
 
