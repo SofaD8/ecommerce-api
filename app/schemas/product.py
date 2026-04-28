@@ -1,8 +1,14 @@
 from pydantic import (
     BaseModel,
-    field_validator,
-    ConfigDict
+    ConfigDict,
+    field_validator
 )
+
+
+def round_price_value(value: float | None) -> float | None:
+    if value is None:
+        return value
+    return round(value, 2)
 
 
 class ProductBase(BaseModel):
@@ -10,21 +16,30 @@ class ProductBase(BaseModel):
     price: float
     description: str | None = None
 
+    model_config = ConfigDict(from_attributes=True)
+
     @field_validator("price")
     @classmethod
-    def round_price(cls, v):
-        return round(v, 2)
+    def round_price(cls, value):
+        return round_price_value(value)
 
 
 class ProductCreate(ProductBase):
-    pass
+    ...
 
 
 class ProductRead(ProductBase):
     id: int
 
+
+class ProductUpdate(BaseModel):
+    name: str | None = None
+    price: float | None = None
+    description: str | None = None
+
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProductUpdate(ProductBase):
-    pass
+    @field_validator("price")
+    @classmethod
+    def round_price(cls, value):
+        return round_price_value(value)
