@@ -20,12 +20,14 @@ router = APIRouter()
 async def get_products(
     min_price: float | None = Query(None, ge=0, description="Filter by minimum price"),
     max_price: float | None = Query(None, ge=0, description="Filter by maximum price"),
-    name: str | None = Query(None, description="Filter by name")
+    name: str | None = Query(None, description="Filter by name"),
+    keyword: str | None = Query(None, description="Filter by keyword")
 ):
     return ProductService.get_all(
         name=name,
         min_price=min_price,
-        max_price=max_price
+        max_price=max_price,
+        keyword=keyword
     )
 
 

@@ -66,3 +66,38 @@ def test_delete_product():
 def test_get_product_not_found():
     response = client.get("/api/v1/products/999")
     assert response.status_code == 404
+
+
+def test_get_products_by_keyword():
+    client.post("/api/v1/products/", json={
+        "name": "Smartphone",
+        "price": 500.0,
+        "description": "Powerful gaming phone"
+    })
+    client.post("/api/v1/products/", json={
+        "name": "Office Chair",
+        "price": 150.0,
+        "description": "Ergonomic chair for work"
+    })
+    client.post("/api/v1/products/", json={
+        "name": "Water Bottle",
+        "price": 10.0,
+        "description": None
+    })
+
+    response = client.get("/api/v1/products/?keyword=GAMING")
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["name"] == "Smartphone"
+
+    response = client.get("/api/v1/products/?keyword=work")
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["name"] == "Office Chair"
+
+    response = client.get("/api/v1/products/?keyword=pizza")
+    data = response.json()
+    assert len(data) == 0
+
+    response = client.get("/api/v1/products/?keyword=water")
+    assert response.status_code == 200

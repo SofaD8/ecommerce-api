@@ -10,7 +10,8 @@ class ProductService:
     def get_all(
             name: str | None = None,
             min_price: float | None = None,
-            max_price: float | None = None
+            max_price: float | None = None,
+            keyword: str | None = None
     ):
         products = products_db
 
@@ -20,6 +21,12 @@ class ProductService:
             products = [p for p in products if p["price"] >= min_price]
         if max_price is not None:
             products = [p for p in products if p["price"] <= max_price]
+        if keyword:
+            k = keyword.lower()
+            products = [
+                p for p in products
+                if k in p["name"].lower() or (p["description"] and k in p["description"].lower())
+            ]
 
         return products
 
