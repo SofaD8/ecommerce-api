@@ -40,7 +40,12 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
+      - name: Run migrations
+        run: poetry run alembic upgrade head
+
       - name: Run tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce
         run: poetry run pytest
 
       - name: Run Ruff
