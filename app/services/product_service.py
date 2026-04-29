@@ -1,63 +1,68 @@
+from sqlalchemy import select, or_
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.product_db import ProductModel
 from app.schemas.product import ProductCreate, ProductUpdate
-
-
-products_db = []
-next_product_id = 1
 
 
 class ProductService:
     @staticmethod
-    def get_all(
+    async def get_all(
+            db: AsyncSession,
             name: str | None = None,
             min_price: float | None = None,
             max_price: float | None = None,
             keyword: str | None = None
     ):
-        products = products_db
+        query = select(ProductModel)
 
         if name:
-            products = [p for p in products if name.lower() in p["name"].lower()]
+            query = query.where(ProductModel.name.ilike(f"%{name}%"))    # noqa
         if min_price is not None:
-            products = [p for p in products if p["price"] >= min_price]
+            query = query.where(ProductModel.price >= min_price)
         if max_price is not None:
-            products = [p for p in products if p["price"] <= max_price]
+            query = query.where(ProductModel.price <= max_price)
         if keyword:
-            k = keyword.lower()
-            products = [
-                p for p in products
-                if k in p["name"].lower() or (p["description"] and k in p["description"].lower())
-            ]
+            query = query.where(
+                or_(
+                    ProductModel.description.ilike(f"%{keyword}%"),
+                    ProductModel.keyword.contains([keyword])
+                )
+            )
 
-        return products
-
-    @staticmethod
-    def get_by_id(product_id: int):
-        return next((p for p in products_db if p["id"] == product_id), None)
+        result = await db.execute(query)
+        return result.scalars().all()
 
     @staticmethod
-    def create(data: ProductCreate):
-        global next_product_id
+    async def get_by_id(db: AsyncSession, product_id: int):
+        return await db.get(ProductModel, product_id)
 
-        new_product = {"id": next_product_id, **data.model_dump()}
-        products_db.append(new_product)
-        next_product_id += 1
+    @staticmethod
+    async def create(db: AsyncSession, data: ProductCreate):
+        new_product = ProductModel(**data.model_dump())
+        db.add(new_product)
+        await db.commit()
+        await db.refresh(new_product)
         return new_product
 
     @staticmethod
-    def update(product_id: int, data: ProductUpdate):
-        for product in products_db:
-            if product["id"] == product_id:
-                update_data = data.model_dump(exclude_unset=True)
-                product.update(update_data)
-                return product
+    async def update(db: AsyncSession, product_id: int, data: ProductUpdate):
+        product = await ProductService.get_by_id(db, product_id)
+        if product:
+            update_data = data.model_dump(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(product, key, value)
+
+            await db.commit()
+            await db.refresh(product)
+            return product
         return None
 
     @staticmethod
-    def delete(product_id: int):
-        global products_db
-
-        product = ProductService.get_by_id(product_id)
+    async def delete(db: AsyncSession, product_id: int):
+        product = await ProductService.get_by_id(db, product_id)
         if product:
-            products_db = [p for p in products_db if p["id"] != product_id]
+            await db.delete(product)
+            await db.commit()
             return True
         return False

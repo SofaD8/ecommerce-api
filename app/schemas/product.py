@@ -15,7 +15,7 @@ class ProductBase(BaseModel):
     name: str
     price: float
     description: str | None = None
-    keywords: list[str] | None = None
+    keyword: list[str] | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
