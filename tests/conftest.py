@@ -1,3 +1,4 @@
+import os
 from typing import AsyncGenerator
 import pytest
 from httpx import AsyncClient, ASGITransport
@@ -8,7 +9,7 @@ from app.main import app
 from app.db.session import get_db
 
 
-DATABASE_URL = "postgresql+asyncpg://sofa:postgres@db:5432/ecommerce"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce")
 
 
 @pytest.fixture(scope="session")
