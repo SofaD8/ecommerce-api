@@ -8,7 +8,7 @@ from app.main import app
 from app.db.session import get_db
 
 
-DATABASE_URL = "postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce"
+DATABASE_URL = "postgresql+asyncpg://sofa:postgres@db:5432/ecommerce"
 
 
 @pytest.fixture(scope="session")
