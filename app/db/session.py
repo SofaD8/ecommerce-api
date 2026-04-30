@@ -1,3 +1,4 @@
+import os
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
@@ -6,7 +7,10 @@ from sqlalchemy.ext.asyncio import (
 )
 
 
-DATABASE_URL = "postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set in environment variables")
 
 engine =create_async_engine(DATABASE_URL, echo=True)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)

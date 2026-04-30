@@ -1,6 +1,5 @@
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import (
-     DeclarativeBase,
      Mapped,
      mapped_column)
 from sqlalchemy import (
@@ -9,9 +8,7 @@ from sqlalchemy import (
      Text
 )
 
-
-class Base(DeclarativeBase):
-    pass
+from app.db.base import Base
 
 
 class ProductModel(Base):
