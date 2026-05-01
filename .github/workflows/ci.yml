@@ -45,7 +45,7 @@ jobs:
 
       - name: Run tests
         env:
-          DATABASE_URL: postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: poetry run pytest
 
       - name: Run Ruff

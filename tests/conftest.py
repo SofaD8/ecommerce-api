@@ -1,12 +1,16 @@
 import os
 from typing import AsyncGenerator
 import pytest
+from dotenv import load_dotenv
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.pool import NullPool
 
 from app.main import app
 from app.db.session import get_db
+
+
+load_dotenv()
 
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce")
