@@ -13,7 +13,10 @@ from app.db.session import get_db
 load_dotenv()
 
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce")
+DEFAULT_DB = "postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce"
+DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB)
+if DATABASE_URL and "asyncpg" not in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
 
 
 @pytest.fixture(scope="session")

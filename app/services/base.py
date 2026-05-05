@@ -4,6 +4,7 @@ from typing import (
     Type,
     Optional
 )
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel
 
@@ -20,6 +21,10 @@ class BaseService(
 ):
     def __init__(self, model: Type[ModelType]):
         self.model = model
+
+    async def get_all(self, db: AsyncSession) -> list[ModelType]:
+        result = await db.execute(select(self.model))
+        return list(result.scalars().all())
 
     async def get_by_id(
             self,
