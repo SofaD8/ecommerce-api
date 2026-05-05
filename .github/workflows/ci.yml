@@ -9,6 +9,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: sofa
+      POSTGRES_DB: ecommerce
+      POSTGRES_PASSWORD: postgres
+      DATABASE_URL: postgresql://sofa:postgres@localhost:5432/ecommerce
     services:
       postgres:
         image: postgres:latest
@@ -44,8 +51,6 @@ jobs:
         run: poetry run alembic upgrade head
 
       - name: Run tests
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: poetry run pytest
 
       - name: Run Ruff
