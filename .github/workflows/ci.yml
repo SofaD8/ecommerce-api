@@ -15,7 +15,7 @@ jobs:
       POSTGRES_USER: sofa
       POSTGRES_DB: ecommerce
       POSTGRES_PASSWORD: postgres
-      DATABASE_URL: postgresql://sofa:postgres@localhost:5432/ecommerce
+      DATABASE_URL: postgresql+asyncpg://sofa:postgres@localhost:5432/ecommerce
     services:
       postgres:
         image: postgres:latest
