@@ -8,13 +8,16 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.schemas.user import UserCreate, UserRead, UserUpdate
+from app.schemas.user import (
+    UserCreate,
+    UserRead,
+    UserUpdate
+)
 from app.services.user_service import user_service
 from app.db.session import get_db
-from app.core.security import create_access_token
 from app.models.user_db import UserModel, UserRole
 from app.api.dependencies import role_required
-from app.services.user_service import verify_password
+from app.services.auth_service import auth_service
 
 
 router = APIRouter()
@@ -29,6 +32,12 @@ async def create_user(
         user_in: UserCreate,
         db: AsyncSession = Depends(get_db)
 ):
+    user = await user_service.get_by_email(db, email=user_in.email)
+    if user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered",
+        )
     return await user_service.create(db, obj_in=user_in)
 
 @router.post("/login")
@@ -36,18 +45,20 @@ async def login(
         db: AsyncSession = Depends(get_db),
         form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    user = await user_service.get_by_email(db, email=form_data.username)
+    user = await auth_service.authenticate_user(
+        db,
+        email=form_data.username,
+        password=form_data.password
+    )
 
-    if not user or not verify_password(
-            form_data.password, user.hashed_password
-    ):
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(data={"sub": user.email})
+    access_token = auth_service.create_token_for_user(user)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/", response_model=List[UserRead])
@@ -64,7 +75,7 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
     _: UserModel = Depends(role_required(UserRole.ADMIN))
 ):
-    user = await user_service.get_by_id(db, id_id=user_id)
+    user = await user_service.get_by_id(db, obj_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return await user_service.update(db, db_obj=user_id, obj_in=user_in)
@@ -78,4 +89,5 @@ async def delete_user(
     user = await user_service.get_by_id(db, obj_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return await user_service.delete(db, obj_id=user_id)
+    await user_service.delete(db, obj_id=user_id)
+    return None
